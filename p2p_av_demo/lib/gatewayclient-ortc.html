@@ -1,0 +1,156 @@
+<!--/*
+ *   Copyright © Microsoft Open Technologies, Inc.
+ *   All Rights Reserved        
+ *   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ *   the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ *   INCLUDING WITHOUT LIMITATION ANY IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+ *   MERCHANTABLITY OR NON-INFRINGEMENT. 
+ *   
+ *   See the Apache 2 License for the specific language governing permissions and limitations under the License.
+ */-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>ORTC demo</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/objext.js"> </script>
+    <script src="/base64.js"> </script>
+    <script src="/event.js"> </script>
+    <script src="/eventTarget.js"> </script>
+    <script src="/defineEventProperty.js"> </script>
+
+    <script src="/ortc.js"></script>
+    <script src="/dictionaries.js"></script>
+    <script src="/RTCSocket.js"></script>
+    <script src="/RTCTrack.js"></script>
+    <script src="/RTCConnection.js"></script>
+    <script src="/getUserMedia.js"></script>
+    <script src="/MediaStream.js"></script>
+
+    <!-- icejs -->
+    <script type="text/javascript">window.icejs = {};</script>
+    <script src="/checker.js"></script>
+    <script src="/candidateevent.js"></script>
+    <script src="/reflexive.js"></script>
+    <script src="/transport.js"></script>
+    <script src="/gather.js"></script>
+    <script src="/transportbuilder.js"></script>
+    <script type="text/javascript">window.RealtimeTransportBuilder = window.icejs.RealtimeTransportBuilder;</script>
+
+    <style type="text/css">
+        *
+        {
+            font-family: 'Segoe UI';
+        }
+
+        #mainCont
+        {
+            margin: 25px;
+            padding-left: 25px;
+            padding-right: 25px;
+            border: 1px solid;
+            text-align: center;
+            font: bold 16px 'Segoe UI';
+            width: 700px;
+        }
+
+        #status
+        {
+            padding-top: 10px;
+            padding-bottom: 25px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        #pluginholder
+        {
+            border: 1px solid;
+        }
+
+        #status
+        {
+            color: blue;
+        }
+
+        video
+        {
+            display: none;
+        }
+
+        #role
+        {
+            color: red;
+        }
+
+        #alert
+        {
+            position: absolute;
+            margin-left: 270px;
+            top: 200px;
+            width: 250px;
+            background-color: whitesmoke;
+            text-align: center;
+            border: 2px solid black;
+            text-align: center;
+            font: bold 16px 'Segoe UI';
+            border-radius: 10px;
+            padding: 10px;
+            display: none;
+            color: red;
+            z-index: 10;
+        }
+
+            #alert input
+            {
+                width: 50px;
+            }
+    </style>
+</head>
+<body>
+    <div id="mainCont">
+        <h1 id="heading">ORTC Peer</h1>
+        <hr />
+        <p>
+            To run this demo you need a plugin that can be downloaded from <a href="http://html5labs.com">html5labs.com</a>
+        </p>
+        <p>
+            This demonstrates basic peer-to-peer call via <a target="_blank" href="https://github.com/openpeer/ortc/blob/master/draft-w3c-ortc-api-00.md">ORTC API for WebRTC</a>.
+        </p>
+        <p style="display: none">
+            This page is a private room, you <span id="you">are <b id="role">host</b></span>.
+        </p>
+        <p id="errormsg"></p>
+        <p id="inviteother">
+            Invite a <span id="other">guest</span> using: <a id="ortcRemote"
+                href="#guest">this link</a>.
+        </p>
+        <audio id="output"></audio>
+
+        <div id="gostuff">
+            <input id="go" type="submit" value="Call" />
+        </div>
+        <br />
+        <hr>
+        <br />
+        <video id="selfView" controls="controls"></video>
+        <div id="pluginholder" style="width: 400px; height: 400px; margin-left: auto; margin-right: auto; margin-top: 2px; margin-bottom: 2px;">
+        </div>
+        <br />
+        <hr>
+        <div id="status">
+            Ready...
+        </div>
+    </div>
+    <div id="alert">
+        <span id="alertMsg">Message</span>
+        <hr />
+        <input type="button" value="OK" onclick="document.getElementById('alert').style.display = 'none';" />
+    </div>
+    <script src="/signallingchannel.js"></script>
+    <script src="/gatewayclient-p2p.js"></script>
+    <script src="/gatewayclient-ortc-p2p.js"></script>
+</body>
+</html>

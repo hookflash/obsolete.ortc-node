@@ -1,0 +1,97 @@
+<!--/*
+ *   Copyright © Microsoft Open Technologies, Inc.
+ *   All Rights Reserved        
+ *   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ *   the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ *   INCLUDING WITHOUT LIMITATION ANY IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+ *   MERCHANTABLITY OR NON-INFRINGEMENT. 
+ *   
+ *   See the Apache 2 License for the specific language governing permissions and limitations under the License.
+ */-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ORTC demo</title>
+    <script type="text/javascript">
+
+        var id = Math.round((Math.random() * 1000000));
+
+        window.onload = function () {
+            document.getElementById('reset').disabled = true;
+
+            document.getElementById('reset').addEventListener('click', function () {
+                var statusDiv = document.getElementById('status');
+                statusDiv.innerHTML = '';
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', '/reset/' + id, true);
+                xhr.send();
+            });
+
+            document.getElementById('hostLink').href = '/ortcreg/' + id;
+
+            document.title = 'ORTC demo (sid: ' + id + ')';
+        };
+
+        window.onbeforeunload = function () {
+            if (document.getElementById('reset').disabled == false) {
+                return "You will loose this session. Are you sure ?";
+            }
+        };
+
+    </script>
+    <style type="text/css">
+        body
+        {
+            text-align: center;
+        }
+
+        #mainCont
+        {
+            margin: 25px;
+            padding-left: 25px;
+            padding-right: 25px;
+            border: 1px solid;
+            text-align: center;
+            font: bold 16px 'Segoe UI';
+            width: 700px;
+        }
+
+        #resetDiv
+        {
+            padding-top: 10px;
+            padding-bottom: 25px;
+        }
+
+        #container
+        {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="mainCont">
+            <h1>ORTC Demo</h1>
+            <hr />
+            <p>
+                This demo allows you to create audio/video dialog calls via the <a target="_blank"
+                    href="https://rawgithub.com/openpeer/ortc/master/ortc.html">ORTC
+                    API for WebRTC</a>.
+            </p>
+            <p>
+                You can make a new room by opening a host page using <a id='hostLink' href="/ortc" target="_blank" onclick="document.getElementById('reset').disabled = false;">this link</a>
+            </p>
+            <p>On the host page you can invite a guest to join a call.</p>
+            <p>For audio we use G.711 codec and H264 for video.</p>
+            <p>Press End to terminate all conversations.</p>
+            <hr>
+            <div id="resetDiv">
+                <input id="reset" type="submit" value="End All" title="Terminates all coversations started from this page." />
+            </div>
+        </div>
+        <div id="status"></div>
+    </div>
+</body>
+</html>

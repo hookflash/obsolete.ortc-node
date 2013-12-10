@@ -1,0 +1,46 @@
+{
+    "name": "orca_video",
+    "version": "1.0.0",
+    "description": "Simple peer to peer video two-person call using ORTC API",
+    "main": "./lib/gateway-p2p.js",
+    "scripts": {
+	"start": "node lib/gateway-p2p.js"
+	},
+	"dependencies": {
+    },
+    "devDependencies": {
+	"abbrev": "https://registry.npmjs.org/abbrev/-/abbrev-1.0.3.tgz",
+	"active-x-obfuscator": "https://registry.npmjs.org/active-x-obfuscator/-/active-x-obfuscator-0.0.1.tgz",
+	"bunker": "https://registry.npmjs.org/bunker/-/bunker-0.1.1.tgz",
+	"burrito": "https://registry.npmjs.org/burrito/-/burrito-0.2.11.tgz",
+	"charm": "https://registry.npmjs.org/charm/-/charm-0.0.6.tgz",
+	"commander": "https://registry.npmjs.org/commander/-/commander-0.6.1.tgz",
+	"deep-equal": "https://registry.npmjs.org/deep-equal/-/deep-equal-0.0.0.tgz",
+	"difflet": "https://registry.npmjs.org/difflet/-/difflet-0.2.1.tgz",
+	"gently": "https://registry.npmjs.org/gently/-/gently-0.9.1.tgz",
+	"inherits": "https://registry.npmjs.org/inherits/-/inherits-1.0.0.tgz",
+	"mkdirp": "https://registry.npmjs.org/mkdirp/-/mkdirp-0.3.1.tgz",
+	"nodeunit": "https://registry.npmjs.org/nodeunit/-/nodeunit-0.7.4.tgz",
+	"nopt": "https://registry.npmjs.org/nopt/-/nopt-1.0.10.tgz",
+	"options": "https://registry.npmjs.org/options/-/options-0.0.3.tgz",
+	"policyfile": "https://registry.npmjs.org/policyfile/-/policyfile-0.0.4.tgz",
+	"qunitjs": "https://registry.npmjs.org/qunitjs/-/qunitjs-1.9.0.tgz",
+	"redis": "https://registry.npmjs.org/redis/-/redis-0.6.7.tgz",
+	"runforcover": "https://registry.npmjs.org/runforcover/-/runforcover-0.0.2.tgz",
+	"semver": "https://registry.npmjs.org/semver/-/semver-1.0.13.tgz",
+	"slide": "https://registry.npmjs.org/slide/-/slide-1.1.3.tgz",
+	"socket.io-client": "https://registry.npmjs.org/socket.io-client/-/socket.io-client-0.9.6.tgz",
+	"socket.io": "https://registry.npmjs.org/socket.io/-/socket.io-0.9.6.tgz",
+	"tap": "https://registry.npmjs.org/tap/-/tap-0.2.4.tgz",
+	"tinycolor": "https://registry.npmjs.org/tinycolor/-/tinycolor-0.0.1.tgz",
+	"traverse": "https://registry.npmjs.org/traverse/-/traverse-0.5.2.tgz",
+	"traverse": "https://registry.npmjs.org/traverse/-/traverse-0.6.1.tgz",
+	"uglify-js": "https://registry.npmjs.org/uglify-js/-/uglify-js-1.0.6.tgz",
+	"uglify-js": "https://registry.npmjs.org/uglify-js/-/uglify-js-1.0.7.tgz",
+	"uglify-js": "https://registry.npmjs.org/uglify-js/-/uglify-js-1.2.5.tgz",
+	"ws": "https://registry.npmjs.org/ws/-/ws-0.4.21.tgz",
+	"xmlhttprequest": "https://registry.npmjs.org/xmlhttprequest/-/xmlhttprequest-1.2.2.tgz",
+	"yamlish": "https://registry.npmjs.org/yamlish/-/yamlish-0.0.4.tgz",
+	"zeparser": "https://registry.npmjs.org/zeparser/-/zeparser-0.0.5.tgz"
+    }
+}
