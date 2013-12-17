@@ -50,6 +50,7 @@
         }
     };
 
+    // update call status
     function updateCallStat(stat) {
         var btn = document.getElementById('go');
 
@@ -59,6 +60,7 @@
         }
     }
 
+    // close RTCConnection
     function closeConnection() {
         if (rtcConn) {
             rtcConn.close();
@@ -69,6 +71,7 @@
         window.location.reload();
     }
 
+    // initialize
     gatewayClient.initialize = function () {
 
         try {
@@ -83,6 +86,7 @@
         }
     };
 
+    // signal message to other peer
     function signalMessage(msg) {
 
         if (sigCh) {
@@ -90,6 +94,7 @@
         }
     }
 
+    // start RTCConnection between two peers
     function start() {
         var options = new ortc.RTCConnectionOptions([new ortc.RTCIceServer("stun:168.61.2.180:8888")]);
 
@@ -101,13 +106,8 @@
         // Apply any local ICE candidate and send it to the remote
         rtcConn.oncandidate = function (evt) {
             console.log('got local ICE candidate: ', evt.candidate.connectionAddress + ':' + evt.candidate.connectionPort);
-            rtcConn.setLocalCandidate(evt.candidate);
+            //rtcConn.setLocalCandidate(evt.candidate);
             signalMessage(JSON.stringify({ "candidate": evt.candidate }));
-        };
-
-        // Once remote stream arrives, show it in the remote video element
-        rtcConn.onaddstream = function (evt) {
-            console.log('got remote stream: ', evt.stream.id);
         };
 
         // Get a local stream, show it in a self-view and add it to be sent
@@ -125,42 +125,42 @@
                 ' and ' + evt.remoteCandidate.connectionAddress + ':' + evt.remoteCandidate.connectionPort);
         };
 
-        // ICE connection has been established
-        rtcConn.onconnected = function (evt) {
-            console.log('ice connection has been established');
-            updateCallStat('HangUp');
-            showMessage('Call connected...');
-            document.getElementById('pluginholder').style.visibility = 'visible';
-        };
-
-        // ICE connection has been lost
-        rtcConn.ondisconnected = function (evt) {
-            console.log('ice connection has been lost');
-            updateCallStat('Call');
-            showMessage('Call disconnected...', true);
-        };
-
         // Unknown track recieved
         rtcConn.onunknowntrack = function (evt) {
             console.log('unknown track recieved: ', evt.rtpExtHeaders.ssrc);
         };
 
-        // Receiving RTCDTMFHandler is added
-        rtcConn.onadddtmfhandler = function (evt) {
-            console.log('receiving RTCDTMFHandler is added: ', evt.handler.id);
+        // connection state has changed
+        rtcConn.onstatechanged = function (evt) {
+            console.log('connection state changed to ' + rtcConn.state);
+
+            if (rtcConn.state === ortc.RTCConnectionState.CONNECTED) {
+                console.log('ice connection has been established');
+                updateCallStat('HangUp');
+                showMessage('Call connected...');
+                document.getElementById('pluginholder').style.visibility = 'visible';
+            }
+
+            if (rtcConn.state === ortc.RTCConnectionState.CLOSED) {
+                console.log('ice connection has been lost');
+                updateCallStat('Call');
+                showMessage('Call disconnected...', true);
+            }
         };
     }
 
+    // getUserMedia success handler
     function gotMedia(stream) {
 
-        rtcConn.addStream(stream);
+        rtcConn.send(stream);
 
-        // send tracks description to the peer
-        rtcConn.tracks().forEach(function (track) {
-            signalMessage(JSON.stringify({ "track": track.getDescription() }));
+        // send stream description to the peer
+        rtcConn.sendStreams().forEach(function (stream) {
+            signalMessage(JSON.stringify({ "stream": stream }));
         });
     }
 
+    // getUserMedia error handler
     function gotMediaError(e) {
         showMessage(e, true);
         console.log('gotMediaError: ', e);
@@ -187,6 +187,7 @@
         document.getElementById('alertMsg').innerText = msg;
     }
 
+    // handle messages from other peer
     function handleMessages(evt) {
 
         var message = JSON.parse(evt.data);
@@ -259,19 +260,20 @@
             if (message.candidate) {
 
                 console.log('got remote ICE candidate: ', message.candidate.connectionAddress + ':' + message.candidate.connectionPort);
-                rtcConn.setRemoteCandidate(message.candidate);
+                rtcConn.addRemoteCandidate(message.candidate);
                 return;
             }
 
-            if (message.track) {
+            if (message.stream) {
 
-                console.log('got recieving track description: ', message.track.ssrc);
-                rtcConn.receiveTrack(message.track);
+                console.log('got recieving stream: ', message.stream);
+                rtcConn.receive(message.stream);
                 return;
             }
         }
     }
 
+    // get RTCCapabilities
     function getCapabilities() {
         var util = ortc.util;
 

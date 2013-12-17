@@ -53,7 +53,10 @@ var clientJs = {
     '/ortc.js': '../node_modules/ortc/src/ortc.js',
     '/dictionaries.js': '../node_modules/ortc/src/dictionaries.js',
     '/RTCSocket.js': '../node_modules/ortc/src/RTCSocket.js',
+    '/RTCDataChannel.js': '../node_modules/ortc/src/RTCDataChannel.js',
+    '/RTCStream.js': '../node_modules/ortc/src/RTCStream.js',
     '/RTCTrack.js': '../node_modules/ortc/src/RTCTrack.js',
+    '/RTCDTMFTrack.js': '../node_modules/ortc/src/RTCDTMFTrack.js',
     '/RTCConnection.js': '../node_modules/ortc/src/RTCConnection.js',
     '/MediaStream.js': '../node_modules/ortc/src/MediaStream.js',
     '/getUserMedia.js': '../node_modules/ortc/src/getUserMedia.js',
@@ -66,38 +69,11 @@ var clientJs = {
     '/transportbuilder.js': '../node_modules/ice.js/lib/transportbuilder.js'
 };
 
-/*
- * Other functions.
- */
-function init() {
-    rooms = {};
-    configs = {};
-    passwords = {};
-    parser = new stun.StunParser(passwords);
-}
 
-init();
+httpServer = http.createServer(httpHandler);
+httpServer.listen(port);
+ioSocket = socketio.listen(httpServer);
 
-function closeRooms(key) {
-    console.log('closeRooms');
-
-    if (rooms.hasOwnProperty(key)) {
-        console.log('terminating room[' + key + ']...');
-        var room = rooms[key];
-        var host = room.clients[0];
-        var guest = room.clients[1];
-
-        if (host) {
-            host.emit('message', { kind: 'stop' });
-        }
-
-        if (guest) {
-            guest.emit('message', { kind: 'stop' });
-        }
-
-        rooms[key].clients = [];
-    }
-}
 
 function startsWith(str, sub) {
     return str.substring(0, sub.length) === sub;
@@ -136,6 +112,37 @@ function generateSideSpecificFields(key, tag) {
     return config;
 }
 
+// initialize
+function init() {
+    rooms = {};
+    configs = {};
+    passwords = {};
+    parser = new stun.StunParser(passwords);
+}
+
+// close p2p connection rooms
+function closeRooms(key) {
+    console.log('closeRooms');
+
+    if (rooms.hasOwnProperty(key)) {
+        console.log('terminating room[' + key + ']...');
+        var room = rooms[key];
+        var host = room.clients[0];
+        var guest = room.clients[1];
+
+        if (host) {
+            host.emit('message', { kind: 'stop' });
+        }
+
+        if (guest) {
+            guest.emit('message', { kind: 'stop' });
+        }
+
+        rooms[key].clients = [];
+    }
+}
+
+// generate config data for participating clients
 function newConfig() {
     var key = crypto.randomBytes(12);
     var config = {
@@ -149,6 +156,7 @@ function newConfig() {
     return config.key;
 }
 
+// handle web requests
 function httpHandler(req, res) {
     var key;
     var sessId;
@@ -252,10 +260,7 @@ function httpHandler(req, res) {
     }
 }
 
-httpServer = http.createServer(httpHandler);
-httpServer.listen(port);
-ioSocket = socketio.listen(httpServer);
-
+// handle websocket messages
 function handleMessage(socket, data) {
 
     console.log('data.kind: ' + data.kind);
@@ -353,6 +358,7 @@ function handleMessage(socket, data) {
     }
 }
 
+// handle websocket disconnect
 function handleDisconnect(socket) {
     console.log('[', socket.id, '] was disconnected');
 
@@ -375,6 +381,7 @@ function handleDisconnect(socket) {
     }
 }
 
+// on websocket connection
 ioSocket.on('connection', function (client) {
     console.log('[', client.id, '] was connected');
 
@@ -387,97 +394,4 @@ ioSocket.on('connection', function (client) {
     });
 });
 
-function isType(type) {
-    return function (attr) {
-        return attr.type === type;
-    };
-}
-
-function ipToInt32(ip) {
-    var intVal = 0;
-    var i;
-    var piece = 0;
-    for (i = 0; i < ip.length; ++i) {
-        if (ip.charAt(i) === '.') {
-            intVal += piece;
-            piece = 0;
-            intVal = (intVal * 256);
-        } else {
-            piece = (piece * 10) + parseInt(ip.charAt(i), 10);
-        }
-    }
-    intVal += piece;
-    return intVal;
-}
-
-function buildMappedAddress(rinfo) {
-    var xor = stun.MAGIC_COOKIE;
-    var type = stun.StunAttribute.XOR_MAPPED_ADDRESS;
-
-    var mappedAddress = new Buffer(8);
-    mappedAddress.writeUInt16BE(1, 0);
-    var portX = rinfo.port ^ ((xor >> 16) & 0x0000ffff);
-    var ip32X = ipToInt32(rinfo.address) ^ xor;
-    mappedAddress.writeUInt16BE(portX, 2);
-    mappedAddress.writeInt32BE(ip32X, 4);
-
-    return {
-        type: type,
-        value: mappedAddress
-    };
-}
-
-function buildResponse(binding, rinfo) {
-    var attrs = [];
-    var builder = new stun.StunBindingBuilder({}, {
-        ufrag: binding.ufrag,
-        pwd: passwords[binding.ufrag]
-    });
-
-    // echo nominations
-    if (binding.attributes.some(isType(stun.StunAttribute.USE_CANDIDATE))) {
-        attrs.push({
-            type: stun.StunAttribute.USE_CANDIDATE,
-            value: new Buffer(0)
-        });
-    }
-
-    // send the XOR-MAPPED-ADDRESS
-    attrs.push(buildMappedAddress(rinfo));
-    return builder.build(binding.transactionId, attrs);
-}
-
-function answerMessage(err, bytes) {
-    if (err) {
-        console.warn('error', err);
-    }
-}
-
-udpSocket = dgram.createSocket('udp4');
-
-udpSocket.on('message', function (msg, rinfo) {
-    var binding, response;
-
-    // we use udp only for taking stun checks.
-    console.log('udpSocket : onmessage');
-
-    try {
-        binding = parser.parse(msg);
-
-        if (binding.type === stun.StunType.BINDING && binding.stunClass === stun.StunClass.RESPONSE) {
-            console.log('response!', binding);
-        }
-
-        if (binding.type !== stun.StunType.BINDING || binding.stunClass !== stun.StunClass.REQUEST) {
-            throw new Error('Not a STUN Binding request');
-        }
-
-        response = buildResponse(binding, rinfo);
-        udpSocket.send(response, 0, response.length, rinfo.port, rinfo.address, answerMessage);
-
-    } catch (e) {
-        console.log(e.stack);
-    }
-});
-
-udpSocket.bind(port);
+init();

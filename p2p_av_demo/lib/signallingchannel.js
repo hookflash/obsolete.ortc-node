@@ -31,7 +31,7 @@
 
     Object.inherits(SignallingChannel, EventTarget);
 
-
+    // send data to other peer
     SignallingChannel.prototype.send = function (data) {
 
         data = JSON.parse(data);
@@ -53,6 +53,8 @@
 
         if (data.candidate) {
 
+            console.log('candidate');
+
             clientSocket.emit('message',
            {
                kind: 'remotecandidate',
@@ -65,6 +67,8 @@
         }
 
         if (data.track) {
+
+            console.log('track');
 
             clientSocket.emit('message',
            {
@@ -79,6 +83,8 @@
 
         if (data.action) {
 
+            console.log('action');
+
             clientSocket.emit('message',
            {
                kind: 'action',
@@ -92,6 +98,8 @@
 
         if (data.error) {
 
+            console.log('error');
+
             clientSocket.emit('message',
            {
                kind: 'error',
@@ -102,15 +110,29 @@
 
             return;
         }
+
+        if (data.stream) {
+
+            console.log('stream');
+
+            clientSocket.emit('message',
+           {
+               kind: 'stream',
+               type: (gatewayClient.local === 'host' ? 0 : 1),
+               stream: data.stream,
+               token: gatewayClient.key
+           });
+
+            return;
+        }
     };
 
+    // close channel
     SignallingChannel.prototype.close = function () {
-        //if (clientSocket) {
-        //    clientSocket.disconnect();
-        //    clientSocket = null;
-        //}
+        console.log('SignallingChannel: close');
     };
 
+    // open channel
     function start() {
 
         if (!clientSocket) {
@@ -129,6 +151,7 @@
         }
     }
 
+    // dispatch received messages
     function dispatchMessage(msg, type) {
 
         var evt = new Event('message');
@@ -136,6 +159,7 @@
         self.dispatchEvent(evt);
     }
 
+    // handle websocket messages
     function handleSocketIoMsg(e) {
 
         if (e.kind === 'connect') {
@@ -180,15 +204,19 @@
             console.log('socketio: duplicate');
             dispatchMessage(JSON.stringify({ duplicate: true }));
         }
+        else if (e.kind === 'stream') {
+            console.log('socketio: stream');
+            dispatchMessage(JSON.stringify({ stream: e.stream }));
+        }
     }
 
+    // connect to websocket
     function connect(messageHandlerCb, disconnectCb) {
         var hostname = window.document.location.hostname;
         var port = window.document.location.port;
         var url = 'http://' + hostname + ':' + port;
 
         var resultSocket = io.connect(url, { 'force new connection': true }); // as per https://github.com/LearnBoost/socket.io-client/issues/318
-        //var resultSocket = io.connect(url);
 
         resultSocket.on('message', messageHandlerCb);
 
